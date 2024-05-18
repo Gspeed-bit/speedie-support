@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai'; // Import eye icons
-
+import {useSelector,useDispatch}  from "react-redux"
+import {register} from "../features/auth/authSlice"
 const Register = () => {
   const initialFormData = {
     firstName: '',
@@ -13,7 +14,9 @@ const Register = () => {
   const [formData, setFormData] = useState(initialFormData);
 
   const { firstName, lastName, email, password, password2 } = formData;
+const dispatch = useDispatch();
 
+const {user,isLoading,isSuccess,message}= useSelector(state=>state.auth);
   const [showPassword, setShowPassword] = useState(false); // State to manage visibility of password
 
   const handleChange = (e) => {
@@ -25,9 +28,17 @@ const Register = () => {
     if (password !== password2) {
       toast.error('Password Not Matching!');
     } else {
+      const userData = {
+        firstName,
+        lastName,
+        email,
+        password,
+      };
+      dispatch(register(userData));
+
       toast.success('Success Notification !');
       setFormData(initialFormData);
-      console.log(formData);
+  
     }
   };
 
@@ -48,9 +59,8 @@ const Register = () => {
 
         <main className='flex items-center justify-center px-8 py-8 sm:px-12 lg:col-span-7 lg:px-16 lg:py-12 xl:col-span-6'>
           <div className='max-w-xl lg:max-w-3xl'>
-
             <h1 className='mt-6 text-2xl font-bold text-gray-900 sm:text-3xl md:text-4xl'>
-              Welcome to Speedie
+              Welcome to Speedie 
             </h1>
 
             <p className='mt-4 leading-relaxed text-gray-500'>
