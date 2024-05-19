@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai'; // Import eye icons
+import { useSelector, useDispatch } from 'react-redux';
 
+import { login } from '../features/auth/authSlice';
 const Login = () => {
   const initialFormData = {
     email: '',
@@ -16,13 +18,21 @@ const Login = () => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+  const dispatch = useDispatch();
 
+  const { user, isLoading, isSuccess, message } = useSelector(
+    (state) => state.auth
+  );
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!email || !password) {
       toast.error('Please fill in all fields');
     } else {
-      console.log(formData);
+      const userData = {
+        email,
+        password,
+      };
+      dispatch(login(userData));
       toast.success('welcome Back');
       setFormData(initialFormData);
     }
@@ -45,7 +55,6 @@ const Login = () => {
 
         <main className='flex items-center justify-center px-8 py-8 sm:px-12 lg:col-span-7 lg:px-16 lg:py-12 xl:col-span-6'>
           <div className='max-w-xl lg:max-w-3xl'>
-
             <h1 className='mt-6 text-2xl font-bold text-gray-900 sm:text-3xl md:text-4xl'>
               Welcome to Speedie
             </h1>

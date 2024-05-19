@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai'; // Import eye icons
-import {useSelector,useDispatch}  from "react-redux"
-import {register} from "../features/auth/authSlice"
+import { useSelector, useDispatch } from 'react-redux';
+import { register, reset } from '../features/auth/authSlice';
+import { useNavigate } from 'react-router-dom';
+
 const Register = () => {
   const initialFormData = {
     firstName: '',
@@ -14,15 +16,31 @@ const Register = () => {
   const [formData, setFormData] = useState(initialFormData);
 
   const { firstName, lastName, email, password, password2 } = formData;
-const dispatch = useDispatch();
-
-const {user,isLoading,isSuccess,message}= useSelector(state=>state.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { user, isSuccess, isError, message } = useSelector(
+    (state) => state.auth
+  );
   const [showPassword, setShowPassword] = useState(false); // State to manage visibility of password
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  useEffect(() => {
+    if (isError) {
+      toast.error(message);
+    }
+
+    //redirect to homepage
+    if (isSuccess) {
+      toast.success('Success Notification !');
+      navigate('/');
+    }
+    dispatch(reset());
+  }, [user, navigate, isSuccess, isError, message, dispatch]);
+
+  //handle submit
   const handleSubmit = (e) => {
     e.preventDefault();
     if (password !== password2) {
@@ -35,10 +53,7 @@ const {user,isLoading,isSuccess,message}= useSelector(state=>state.auth);
         password,
       };
       dispatch(register(userData));
-
-      toast.success('Success Notification !');
       setFormData(initialFormData);
-  
     }
   };
 
@@ -60,7 +75,7 @@ const {user,isLoading,isSuccess,message}= useSelector(state=>state.auth);
         <main className='flex items-center justify-center px-8 py-8 sm:px-12 lg:col-span-7 lg:px-16 lg:py-12 xl:col-span-6'>
           <div className='max-w-xl lg:max-w-3xl'>
             <h1 className='mt-6 text-2xl font-bold text-gray-900 sm:text-3xl md:text-4xl'>
-              Welcome to Speedie 
+              Welcome to Speedie
             </h1>
 
             <p className='mt-4 leading-relaxed text-gray-500'>

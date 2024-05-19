@@ -1,6 +1,7 @@
 import { FaSignInAlt, FaSignOutAlt, FaUser } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
-
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout, reset } from '../features/auth/authSlice';
 
 const NavLink = ({ to, icon, children }) => (
   <Link to={to} className='flex items-center gap-1'>
@@ -9,6 +10,15 @@ const NavLink = ({ to, icon, children }) => (
 );
 
 const Header = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
+
+  const onLogout = () => {
+    dispatch(logout());
+    dispatch(reset());
+    navigate('/');
+  };
   return (
     <div className='wrapper border-b border-grey-100'>
       <header className='flex-between w-full '>
@@ -29,12 +39,24 @@ const Header = () => {
           </Link>
         </div>
         <div className='flex items-center gap-3'>
-          <NavLink to='/login' icon={<FaSignInAlt />}>
-            Login
-          </NavLink>
-          <NavLink to='/register' icon={<FaUser />}>
-            Register
-          </NavLink>
+          {user ? (
+            <button
+              onClick={onLogout}
+              className='flex-center gap-2 bg-bluey-400 p-2 px-3 rounded-lg text-white'
+            >
+              <FaSignOutAlt />
+              Logout
+            </button>
+          ) : (
+            <>
+              <NavLink to='/login' icon={<FaSignInAlt />}>
+                Login
+              </NavLink>
+              <NavLink to='/register' icon={<FaUser />}>
+                Register
+              </NavLink>
+            </>
+          )}
         </div>
       </header>
     </div>
