@@ -14,6 +14,8 @@ const initialState = {
   isSuccess: false,
   message: '',
 };
+
+
 // Register a new user
 export const register = createAsyncThunk(
   'auth/register', // action type for registering a user
@@ -38,12 +40,25 @@ export const register = createAsyncThunk(
 );
 
 //login user
-export const login = createAsyncThunk(
-  'auth/login',
-  async (user, { rejectWithValue }) => {
-    console.log(user);
+export const login = createAsyncThunk('auth/login', 
+async (user, thunkAPI) => {
+  // thunk function for user login
+  try {
+    // attempt to login the user using the authService
+    return await authService.login(user);
+  } catch (error) {
+    // catch any errors that occur during login
+    // construct a meaningful error message to return
+    const message =
+      (error.response && // if the error has a response
+        error.response.data && // and the response has data
+        error.response.data.message) || // use the message from the response data
+      error.message || // otherwise, use the error message itself
+      error.toString(); // or a string representation of the error
+    // reject the thunk with the error message
+    return thunkAPI.rejectWithValue(message);
   }
-);
+});
 
 
 //logout user
@@ -87,8 +102,26 @@ export const authSlice = createSlice({
         state.user=null;
       })
       .addCase(logout.fulfilled, (state) => {
-        state.set = null;
+        state.user = null;
       })
+      .addCase(login.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.user = action.payload;
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+        state.user=null;
+      })
+    //  .addCase(forgotPassword.pending, (state) => {  
+    //     state.isLoading = true;
+    //   }
+    // )
   },
 });
 

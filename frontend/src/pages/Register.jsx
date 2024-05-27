@@ -4,6 +4,7 @@ import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai'; // Import 
 import { useSelector, useDispatch } from 'react-redux';
 import { register, reset } from '../features/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
+import Spinner from '../components/constant/spinner';
 
 const Register = () => {
   const initialFormData = {
@@ -14,31 +15,46 @@ const Register = () => {
     password2: '',
   };
   const [formData, setFormData] = useState(initialFormData);
+  const [showSpinner, setShowSpinner] = useState(false);
 
   const { firstName, lastName, email, password, password2 } = formData;
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user, isSuccess, isError, message } = useSelector(
+  const { user, isSuccess,isLoading, isError, message } = useSelector(
     (state) => state.auth
   );
   const [showPassword, setShowPassword] = useState(false); // State to manage visibility of password
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
   useEffect(() => {
+
+      if (isLoading) {
+        setShowSpinner(true);
+      } else {
+        setShowSpinner(false);
+      }
+
     if (isError) {
       toast.error(message);
     }
 
     //redirect to homepage
     if (isSuccess) {
-      toast.success('Success Notification !');
-      navigate('/');
+      setShowSpinner(true);
+      setTimeout(() => {
+        setShowSpinner(false);
+        navigate('/');
+        toast.success('Welcome to Speedie');
+        dispatch(reset());
+      }, 2000); // Show spinner for 2 seconds before navigating
     }
-    dispatch(reset());
-  }, [user, navigate, isSuccess, isError, message, dispatch]);
+  }, [user, navigate, isSuccess,isLoading, isError, message, dispatch]);
 
   //handle submit
   const handleSubmit = (e) => {
@@ -49,7 +65,7 @@ const Register = () => {
       const userData = {
         firstName,
         lastName,
-        email,
+        email: email.toLowerCase(), // Convert email to lowercase,
         password,
       };
       dispatch(register(userData));
@@ -60,7 +76,9 @@ const Register = () => {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-
+ if (showSpinner) {
+   return <Spinner />;
+ }
   return (
     <section className='bg-bluey-100'>
       <div className='lg:grid lg:min-h-screen lg:grid-cols-12'>

@@ -1,10 +1,21 @@
 import { Link } from 'react-router-dom';
 import { BsFillPatchQuestionFill, BsTicketDetailedFill } from 'react-icons/bs';
+import { useSelector} from 'react-redux';
 const Home = () => {
+
+    const { user} = useSelector(
+      (state) => state.auth
+    );
+     const userName = user
+       ? `${user.firstName}  ${user.lastName}`
+       : 'Guest';
+
   return (
     <>
       <section className='text-center h5-bold m-10'>
         <div className=''>
+        
+          <h1 className='text-end mb-5 p-semibold-14'>welcome back, {userName}</h1>
           <h1 className='h5-bold md:h1-bold text-gray-900  '>
             what do you need help with?
           </h1>

@@ -1,39 +1,71 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai'; // Import eye icons
 import { useSelector, useDispatch } from 'react-redux';
-
-import { login } from '../features/auth/authSlice';
+import { useNavigate } from 'react-router-dom';
+import { login, reset } from '../features/auth/authSlice';
+import Spinner from '../components/constant/spinner';
 const Login = () => {
   const initialFormData = {
     email: '',
     password: '',
   };
   const [formData, setFormData] = useState(initialFormData);
+  const [showSpinner, setShowSpinner] = useState(false);
 
   const { email, password } = formData;
 
   const [showPassword, setShowPassword] = useState(false); // State to manage visibility of password
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
   const dispatch = useDispatch();
+ const navigate = useNavigate();
 
-  const { user, isLoading, isSuccess, message } = useSelector(
+  const { user, isLoading, isError, isSuccess, message } = useSelector(
     (state) => state.auth
   );
+
+
+  useEffect(() => {
+    if (isLoading) {
+      setShowSpinner(true);
+    } else {
+      setShowSpinner(false);
+    }
+
+    if (isError && message) {
+      toast.error(message);
+    }
+  const userName = user ? `${user.firstName}` : 'null';
+    if (isSuccess && user) {
+      setShowSpinner(true);
+      setTimeout(() => {
+        setShowSpinner(false);
+        navigate('/');
+        toast.success(`Welcome Back ${userName} `);
+        dispatch(reset());
+      }, 2500); // Show spinner for 2 seconds before navigating
+    }
+  }, [user, navigate, isSuccess, isError, isLoading, message, dispatch]);
+
+  if (showSpinner) {
+    return <Spinner />;
+  }
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!email || !password) {
       toast.error('Please fill in all fields');
     } else {
       const userData = {
-        email,
+        email: email.toLowerCase(), // Convert email to lowercase,
         password,
       };
       dispatch(login(userData));
-      toast.success('welcome Back');
       setFormData(initialFormData);
     }
   };
@@ -41,7 +73,9 @@ const Login = () => {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-
+if (isLoading){
+  <Spinner/>
+}
   return (
     <section className='bg-bluey-100'>
       <div className='lg:grid lg:min-h-screen lg:grid-cols-12'>
