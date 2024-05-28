@@ -31,7 +31,7 @@ const NewTicket = () => {
     const ticketData = {
       product,
       description,
-      priority,
+      priority:priority.toLowerCase(),
     };
     dispatch(createTicket(ticketData));
   };
