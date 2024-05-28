@@ -20,7 +20,7 @@ const Register = () => {
   const { firstName, lastName, email, password, password2 } = formData;
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user, isSuccess,isLoading, isError, message } = useSelector(
+  const { user, isSuccess, isLoading, isError, message } = useSelector(
     (state) => state.auth
   );
   const [showPassword, setShowPassword] = useState(false); // State to manage visibility of password
@@ -33,12 +33,11 @@ const Register = () => {
   };
 
   useEffect(() => {
-
-      if (isLoading) {
-        setShowSpinner(true);
-      } else {
-        setShowSpinner(false);
-      }
+    if (isLoading) {
+      setShowSpinner(true);
+    } else {
+      setShowSpinner(false);
+    }
 
     if (isError) {
       toast.error(message);
@@ -54,7 +53,7 @@ const Register = () => {
         dispatch(reset());
       }, 2000); // Show spinner for 2 seconds before navigating
     }
-  }, [user, navigate, isSuccess,isLoading, isError, message, dispatch]);
+  }, [user, navigate, isSuccess, isLoading, isError, message, dispatch]);
 
   //handle submit
   const handleSubmit = (e) => {
@@ -76,9 +75,9 @@ const Register = () => {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
- if (showSpinner) {
-   return <Spinner />;
- }
+  if (showSpinner) {
+    return <Spinner />;
+  }
   return (
     <section className='bg-bluey-100'>
       <div className='lg:grid lg:min-h-screen lg:grid-cols-12'>
