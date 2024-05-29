@@ -14,7 +14,7 @@ const noteSchema = new mongoose.Schema(
     },
 
     isStaff: {
-      type: boolean,
+      type: Boolean,
       default: 'false',
     },
     text: {
