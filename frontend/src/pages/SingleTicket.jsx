@@ -1,85 +1,168 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import Spinner from '../components/constant/spinner';
-import { getTicket } from '../features/tickets/ticketSlice';
+import {
+  getTicket,
+  updateTicketStatus,
+  closeTicket,
+} from '../features/tickets/ticketSlice';
 import { toast } from 'react-toastify';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/constant/BackButton';
 
 const SingleTicket = () => {
-  // eslint-disable-next-line
-  const { ticket, isSuccess, isLoading, isError, message } = useSelector(
+  const { ticket, isLoading, isError, message } = useSelector(
     (state) => state.ticket
   );
-  const [showSpinner, setShowSpinner] = useState(false);
-  // eslint-disable-next-line
-  const params = useParams();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { ticketId } = useParams();
+  const [statusChanging, setStatusChanging] = useState(false);
 
   useEffect(() => {
     if (isError) {
-      toast.error(message);
+      toast.error(message || 'An error occurred');
     }
     dispatch(getTicket(ticketId));
   }, [isError, message, dispatch, ticketId]);
 
-  if (isError) {
-    toast.error('error occur');
-  }
+  const handleStatusChange = () => {
+    setStatusChanging(true);
+    const newStatus = 'In Progress';
+    dispatch(updateTicketStatus({ ticketId, newStatus }))
+      .then(() => {
+        // Optionally, you can refresh the ticket after status change
+        dispatch(getTicket(ticketId));
+      })
+      .catch((error) => {
+        setStatusChanging(false);
+        toast.error(error.message || 'Failed to change status');
+      })
+      .finally(() => {
+        setStatusChanging(false);
+      });
+  };
+  console.log({ticket})
 
-  if (showSpinner) {
-    <Spinner />;
+  //handle close Ticket
+   const handleCloseTicket = () => {
+     dispatch(closeTicket({ticketId, status:"Closed"}))
+       .then(() => {
+         toast.success('Ticket Closed');
+        navigate('/tickets');
+       })
+       .catch((error) => {
+         toast.error(error.message || 'Failed to close ticket');
+       })
+        .finally(() => {
+        setStatusChanging(false);
+      });
+   };
+
+
+  console.log({ ticket });
+
+  if (isLoading) {
+    return <Spinner />;
   }
 
   return (
     <>
-      <BackButton url='/' />
+      <BackButton url='/tickets' />
       <div className='wrapper'>
         <section className=''>
-          <div className='flex-between'>
-            <div>
-              <p className=''>
-                <span className='p-medium-18'> Data submitted: </span>
-                {new Date(ticket.createdAt).toLocaleString('de-DE', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  second: '2-digit',
-                  hour12: true,
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: 'numeric',
-                })}
-              </p>
+          <div className='flex-sm border-2 p-2 rounded-lg border-blue-600 md:flex-row md:flex-between gap-1'>
+            <div className='pb-4 '>
+              <div className=''>
+                <span className='p-medium-16 text-bluey-400'>
+                  {' '}
+                  Data submitted:{' '}
+                </span>
+                <span className='p-medium-14'>
+                  {new Date(ticket.createdAt).toLocaleString('de-DE', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true,
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                  })}
+                </span>
+              </div>
 
               <h1 className='pt-1'>
-                <span className='p-medium-18'>Ticket ID: </span>
-                {ticket._id}
+                <span className='p-medium-16 text-bluey-400'>Ticket ID: </span>
+                <span className='p-medium-14'> {ticket._id}</span>
               </h1>
+              <h2 className='pt-1'>
+                <span className='p-medium-16 text-bluey-400'>Product:</span>{' '}
+                <span className='p-medium-14'> {ticket.product}</span>
+              </h2>
             </div>
-            <button
-              className={`inline-block capitalize rounded px-4 py-2 text-xs font-medium text-white ${
-                ticket.status=== 'New'
-                  ? 'bg-orange-500'
-                  : ticket.status === 'Open'
-                  ? 'bg-green-500 '
-                  : ticket.status === 'In progress'
-                  ? 'bg-purple-500'
-                  : ticket.status === 'Closed'
-                  ? 'bg-gray-500 '
+            <div className='flex flex-col md:flex-row gap-3 md:gap-2'>
+              <button
+                className={`inline-block capitalize rounded px-6 py-2 text-xs p-semibold-14 md:p-semibold-16 text-white cursor-default ${
+                  ticket.status === 'New'
+                    ? 'bg-orange-500'
+                    : ticket.status === 'Open'
+                    ? 'bg-green-500 '
+                    : ticket.status === 'In Progress'
+                    ? 'bg-purple-500'
+                    : ticket.status === 'Closed'
+                    ? 'bg-red-500 '
+                    : ''
+                }`}
+              >
+                {ticket.status}
+              </button>
+              {(ticket.status === 'New' || ticket.status === 'Open') &&
+                !statusChanging && (
+                  <button
+                    onClick={handleStatusChange}
+                    className='bg-bluey-400 hover:bg-bluey-300 p-medium-14 md:p-medium-16 text-white rounded px-2 py-2'
+                  >
+                    {ticket.status === 'New'
+                      ? 'Start Working'
+                      : 'Resume Working'}
+                  </button>
+                )}
+            </div>
+          </div>
+
+          <div className='pt-1 mt-4 bg-grey-100 p-5 rounded-xl relative'>
+            <span
+              className={`inline-block capitalize absolute top-0 right-0 rounded-tr-xl px-6 py-2 text-xs p-semibold-14 text-white ${
+                ticket.priority === 'Low'
+                  ? 'bg-yellow-400'
+                  : ticket.priority === 'Medium'
+                  ? 'bg-green-500'
+                  : ticket.priority === 'High'
+                  ? 'bg-red-500'
                   : ''
               }`}
             >
-              {ticket.status}
-            </button>
-          </div>
-          <h2 className='pt-1'>
-            <span className='p-medium-18'>Product:</span> {ticket.product}
-          </h2>
-          <div>
-            <p>Description: {ticket.description}</p>
+              {ticket.priority}
+            </span>
+            <div className='py-8'>
+              <span className='p-medium-18 text-bluey-400'>Description:</span>{' '}
+              <p className='text-justify p-regular-14 md:p-regular-16 pt-2'>
+                {' '}
+                {ticket.description}
+              </p>
+            </div>
           </div>
         </section>
+        <div className='pt-5'>
+          {ticket.status !== 'Closed' && (
+            <button
+              onClick={handleCloseTicket}
+              className=' w-full bg-red-500 p-medium-14 md:p-medium-16 text-white rounded px-2 py-2'
+            >
+              Close Ticket
+            </button>
+          )}
+        </div>
       </div>
     </>
   );

@@ -20,19 +20,19 @@ const TicketsItems = ({ ticket }) => {
       </td>
       <td className='whitespace-nowrap capitalize px-4 py-2'>
         <button
-          className={`inline-block capitalize rounded px-4 py-2 text-xs font-medium text-white ${
-            ticket.status.toLowerCase() === 'new'
+          className={`inline-block capitalize rounded px-4 py-2 cursor-default text-xs font-medium text-white ${
+            ticket.status === 'New'
               ? 'bg-orange-500'
-              : ticket.status.toLowerCase() === 'open'
+              : ticket.status === 'Open'
               ? 'bg-green-500 '
-              : ticket.status.toLowerCase() === 'in progress'
+              : ticket.status === 'In Progress'
               ? 'bg-purple-500'
-              : ticket.status.toLowerCase() === 'closed'
-              ? 'bg-gray-500 '
+              : ticket.status === 'Closed'
+              ? 'bg-red-500 '
               : ''
           }`}
         >
-          {ticket.status.toLowerCase()}
+          {ticket.status}
         </button>
       </td>
 

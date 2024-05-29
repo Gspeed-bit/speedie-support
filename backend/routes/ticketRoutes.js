@@ -11,6 +11,9 @@ const {
 } = require('../controllers/ticketController');
 
 
+// to re-route into note router
+const noteRouter= require("./noteRoutes")
+router.use("/:ticketId/notes",noteRouter)
 
 router.route('/').get(protect, getTickets).post(protect, createTickets);
 
