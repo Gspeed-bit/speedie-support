@@ -80,7 +80,7 @@ const createTickets = asyncHandler(async (req, res) => {
     description,
     user: req.user.id,
     status: 'New',
-    priority:"Low",
+    priority,
   });
   res.status(201).json(ticket);
 });

@@ -31,7 +31,7 @@ const NewTicket = () => {
     const ticketData = {
       product,
       description,
-      priority:priority.toLowerCase(),
+      priority: priority, // Ensure priority is correctly captured
     };
     dispatch(createTicket(ticketData));
   };
@@ -137,9 +137,9 @@ const NewTicket = () => {
                   className='p-medium-14 border flex w-full flex-col p-3 rounded-lg'
                 >
                   <option value=''>Select Priority</option>
-                  <option value='low'>Low</option>
-                  <option value='medium'>Medium</option>
-                  <option value='high'>High</option>
+                  <option value='Low'>Low</option>
+                  <option value='Medium'>Medium</option>
+                  <option value='High'>High</option>
                 </select>
               </div>
               <div className='pt-3 space-y-2'>

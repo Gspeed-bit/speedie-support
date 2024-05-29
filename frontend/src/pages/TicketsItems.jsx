@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 const TicketsItems = ({ ticket }) => {
   return (
     <tr>
-      <td className='whitespace-nowrap px-4 py-2  text-gray-700 dark:text-gray-200'>
+      <td className='whitespace-nowrap px-4 py-2  text-gray-700 '>
         {new Date(ticket.createdAt).toLocaleString('de-DE', {
           hour: '2-digit',
           minute: '2-digit',
@@ -15,7 +15,7 @@ const TicketsItems = ({ ticket }) => {
           year: 'numeric',
         })}
       </td>
-      <td className='whitespace-nowrap px-4 py-2 text-gray-700 dark:text-gray-200'>
+      <td className='whitespace-nowrap px-4 py-2 text-gray-700 '>
         {ticket.product}
       </td>
       <td className='whitespace-nowrap capitalize px-4 py-2'>

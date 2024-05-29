@@ -169,6 +169,7 @@ const SingleTicket = () => {
             >
               {ticket.priority}
             </span>
+
             <div className='py-8'>
               <span className='p-medium-18 text-bluey-400'>Description:</span>
               <p
