@@ -58,7 +58,7 @@ const addNote = asyncHandler(async (req, res) => {
     text:req.body.text,
     ticket:req.params.ticketId,
     user: req.user.id,
-    isStaff:false
+    isStaff:req.body.isStaff
   });
   res.status(201).json(note);
 });

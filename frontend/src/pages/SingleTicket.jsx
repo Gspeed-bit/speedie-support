@@ -6,14 +6,38 @@ import {
   updateTicketStatus,
   closeTicket,
 } from '../features/tickets/ticketSlice';
+
 import { toast } from 'react-toastify';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import BackButton from '../components/constant/BackButton';
+import { getNotes, reset as notesReset } from '../features/notes/noteSlice';
+import NewNote from './NewNote';
+import Modal from 'react-modal'; // Import Modal from react-modal
+import NewNoteForm from '../components/constant/NewNoteForm';
+import { IoAddCircleOutline } from 'react-icons/io5';
 
 const SingleTicket = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false); // State variable to manage modal visibility
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true); // Open the modal
+    console.log('open');
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false); // Close the modal
+    console.log('closed');
+  };
   const { ticket, isLoading, isError, message } = useSelector(
     (state) => state.ticket
   );
+  const { notes, isLoading: notesIsLoading } = useSelector(
+    (state) => state.notes
+  );
+
+  // Get user details from the auth state
+  const { user } = useSelector((state) => state.auth);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { ticketId } = useParams();
@@ -24,6 +48,7 @@ const SingleTicket = () => {
       toast.error(message || 'An error occurred');
     }
     dispatch(getTicket(ticketId));
+    dispatch(getNotes(ticketId));
   }, [isError, message, dispatch, ticketId]);
 
   const handleStatusChange = () => {
@@ -42,23 +67,22 @@ const SingleTicket = () => {
         setStatusChanging(false);
       });
   };
-  console.log({ticket})
+  console.log({ notes });
 
   //handle close Ticket
-   const handleCloseTicket = () => {
-     dispatch(closeTicket({ticketId, status:"Closed"}))
-       .then(() => {
-         toast.success('Ticket Closed');
+  const handleCloseTicket = () => {
+    dispatch(closeTicket({ ticketId, status: 'Closed' }))
+      .then(() => {
+        toast.success('Ticket Closed');
         navigate('/tickets');
-       })
-       .catch((error) => {
-         toast.error(error.message || 'Failed to close ticket');
-       })
-        .finally(() => {
+      })
+      .catch((error) => {
+        toast.error(error.message || 'Failed to close ticket');
+      })
+      .finally(() => {
         setStatusChanging(false);
       });
-   };
-
+  };
 
   console.log({ ticket });
 
@@ -146,14 +170,55 @@ const SingleTicket = () => {
             </span>
             <div className='py-8'>
               <span className='p-medium-18 text-bluey-400'>Description:</span>{' '}
-              <p className='text-justify p-regular-14 md:p-regular-16 pt-2'>
-                {' '}
+              <p
+                className={`text-justify p-regular-14 md:p-regular-16 pt-2 ${
+                  ticket.status === 'Closed' ? 'line-through' : ''
+                }`}
+              >
                 {ticket.description}
               </p>
             </div>
           </div>
         </section>
-        <div className='pt-5'>
+        <div className='mt-2'>
+          {ticket.status !== 'Closed' ? (
+            <div>
+              <h1 className='p-semibold-20 text-bluey-400 py-3'>Chat</h1>
+              <button
+                onClick={handleOpenModal}
+                className='bg-bluey-400 p-medium-14 md:p-medium-16 text-white rounded px-2 py-2 mb-4'
+              >
+               <p className='flex gap-2 flex-center'>
+                  <IoAddCircleOutline />
+                  <span> Add Note</span>
+               </p>
+              </button>
+            </div>
+          ) : null}
+
+          <div>
+            {notesIsLoading ? (
+              <Spinner />
+            ) : (
+              <div className='flex flex-col gap-3'>
+                {ticket.status !== 'Closed' &&
+                  notes.map((note) => (
+                    <NewNote note={note} ticket={ticket} key={note._id} />
+                  ))}
+              </div>
+            )}
+          </div>
+        </div>
+        <Modal
+          isOpen={isModalOpen}
+          onRequestClose={handleCloseModal}
+          contentLabel='Add Note Modal'
+          overlayClassName='overlay' // Apply your custom overlay class here
+          className='flex flex-center min-h-screen '
+        >
+          <NewNoteForm onClose={handleCloseModal} />
+        </Modal>
+        <div className='pt-5 flex gap-3'>
           {ticket.status !== 'Closed' && (
             <button
               onClick={handleCloseTicket}

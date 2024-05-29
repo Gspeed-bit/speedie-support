@@ -10,6 +10,7 @@ import NewTicket from './pages/NewTicket';
 import PrivateRoute from './components/privateRoute';
 import TicketHome from './pages/TicketHome';
 import SingleTicket from './pages/SingleTicket';
+// import NewNote from './pages/NewNote';
 
 
 function App() {
@@ -31,6 +32,9 @@ function App() {
             <Route path='/tickets/:ticketId' element={<PrivateRoute />}>
               <Route path='/tickets/:ticketId' element={<SingleTicket />} />
             </Route>
+            {/* <Route path='/tickets/:ticketId/notes' element={<PrivateRoute />}>
+              <Route path='/tickets/:ticketId/notes' element={<NewNote />} />
+            </Route> */}
           </Routes>
           <ToastContainer />
         </div>
