@@ -10,10 +10,7 @@ import {
 import { toast } from 'react-toastify';
 import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/constant/BackButton';
-import {
-  getNotes,
-  createNote,
-} from '../features/notes/noteSlice';
+import { getNotes, createNote } from '../features/notes/noteSlice';
 import NewNote from './NewNote';
 import Modal from 'react-modal'; // Import Modal from react-modal
 
@@ -40,7 +37,6 @@ const SingleTicket = () => {
   const { notes, isLoading: notesIsLoading } = useSelector(
     (state) => state.notes
   );
-
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
