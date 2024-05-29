@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import Spinner from '../components/constant/spinner';
+import { IoCloseCircleOutline } from 'react-icons/io5';
 import {
   getTicket,
   updateTicketStatus,
@@ -8,26 +8,32 @@ import {
 } from '../features/tickets/ticketSlice';
 
 import { toast } from 'react-toastify';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/constant/BackButton';
-import { getNotes, reset as notesReset } from '../features/notes/noteSlice';
+import {
+  getNotes,
+  createNote,
+} from '../features/notes/noteSlice';
 import NewNote from './NewNote';
 import Modal from 'react-modal'; // Import Modal from react-modal
-import NewNoteForm from '../components/constant/NewNoteForm';
+
 import { IoAddCircleOutline } from 'react-icons/io5';
+import Spinner from '../components/constant/spinner';
 
 const SingleTicket = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false); // State variable to manage modal visibility
+  Modal.setAppElement('#root');
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [noteText, setNoteText] = useState('');
 
   const handleOpenModal = () => {
-    setIsModalOpen(true); // Open the modal
-    console.log('open');
+    setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
-    setIsModalOpen(false); // Close the modal
-    console.log('closed');
+    setIsModalOpen(false);
   };
+
   const { ticket, isLoading, isError, message } = useSelector(
     (state) => state.ticket
   );
@@ -35,8 +41,6 @@ const SingleTicket = () => {
     (state) => state.notes
   );
 
-  // Get user details from the auth state
-  const { user } = useSelector((state) => state.auth);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -56,7 +60,6 @@ const SingleTicket = () => {
     const newStatus = 'In Progress';
     dispatch(updateTicketStatus({ ticketId, newStatus }))
       .then(() => {
-        // Optionally, you can refresh the ticket after status change
         dispatch(getTicket(ticketId));
       })
       .catch((error) => {
@@ -67,9 +70,7 @@ const SingleTicket = () => {
         setStatusChanging(false);
       });
   };
-  console.log({ notes });
 
-  //handle close Ticket
   const handleCloseTicket = () => {
     dispatch(closeTicket({ ticketId, status: 'Closed' }))
       .then(() => {
@@ -84,7 +85,12 @@ const SingleTicket = () => {
       });
   };
 
-  console.log({ ticket });
+  const handleAddNote = (e) => {
+    e.preventDefault();
+    dispatch(createNote({ noteText, ticketId }));
+    setNoteText('');
+    handleCloseModal();
+  };
 
   if (isLoading) {
     return <Spinner />;
@@ -99,8 +105,7 @@ const SingleTicket = () => {
             <div className='pb-4 '>
               <div className=''>
                 <span className='p-medium-16 text-bluey-400'>
-                  {' '}
-                  Data submitted:{' '}
+                  Data submitted:
                 </span>
                 <span className='p-medium-14'>
                   {new Date(ticket.createdAt).toLocaleString('de-DE', {
@@ -116,11 +121,11 @@ const SingleTicket = () => {
               </div>
 
               <h1 className='pt-1'>
-                <span className='p-medium-16 text-bluey-400'>Ticket ID: </span>
+                <span className='p-medium-16 text-bluey-400'>Ticket ID:</span>
                 <span className='p-medium-14'> {ticket._id}</span>
               </h1>
               <h2 className='pt-1'>
-                <span className='p-medium-16 text-bluey-400'>Product:</span>{' '}
+                <span className='p-medium-16 text-bluey-400'>Product:</span>
                 <span className='p-medium-14'> {ticket.product}</span>
               </h2>
             </div>
@@ -169,7 +174,7 @@ const SingleTicket = () => {
               {ticket.priority}
             </span>
             <div className='py-8'>
-              <span className='p-medium-18 text-bluey-400'>Description:</span>{' '}
+              <span className='p-medium-18 text-bluey-400'>Description:</span>
               <p
                 className={`text-justify p-regular-14 md:p-regular-16 pt-2 ${
                   ticket.status === 'Closed' ? 'line-through' : ''
@@ -188,41 +193,76 @@ const SingleTicket = () => {
                 onClick={handleOpenModal}
                 className='bg-bluey-400 p-medium-14 md:p-medium-16 text-white rounded px-2 py-2 mb-4'
               >
-               <p className='flex gap-2 flex-center'>
+                <p className='flex gap-2 flex-center'>
                   <IoAddCircleOutline />
-                  <span> Add Note</span>
-               </p>
+                  <span>Add Note</span>
+                </p>
               </button>
             </div>
           ) : null}
-
-          <div>
-            {notesIsLoading ? (
-              <Spinner />
-            ) : (
-              <div className='flex flex-col gap-3'>
-                {ticket.status !== 'Closed' &&
-                  notes.map((note) => (
-                    <NewNote note={note} ticket={ticket} key={note._id} />
-                  ))}
-              </div>
-            )}
-          </div>
         </div>
         <Modal
           isOpen={isModalOpen}
           onRequestClose={handleCloseModal}
           contentLabel='Add Note Modal'
-          overlayClassName='overlay' // Apply your custom overlay class here
-          className='flex flex-center min-h-screen '
+          overlayClassName='overlay'
+          className='flex flex-center min-h-screen'
         >
-          <NewNoteForm onClose={handleCloseModal} />
+          <form onSubmit={handleAddNote}>
+            <div className='md:min-w-[600px] min-w-[400px] bg-white rounded-lg p-6'>
+              <div className='flex justify-end'>
+                <IoCloseCircleOutline
+                  onClick={handleCloseModal}
+                  className='text-bluey-400 text-3xl cursor-pointer'
+                />
+              </div>
+              <h2 className='text-bluey-400 p-semibold-20 md:h5-bold mb-4'>
+                Add a New Note
+              </h2>
+              <textarea
+                value={noteText}
+                onChange={(e) => setNoteText(e.target.value)}
+                rows='2'
+                name='noteText'
+                placeholder='Enter your note here...'
+                className='w-full border border-gray-300 rounded-md p-2 mb-4'
+              ></textarea>
+              <div className='flex justify-end'>
+                <button
+                  type='submit'
+                  className='bg-blue-500 text-white py-2 px-4 rounded-md mr-2'
+                >
+                  Add Note
+                </button>
+                <button
+                  onClick={handleCloseModal}
+                  type='button'
+                  className='bg-gray-300 text-gray-700 py-2 px-4 rounded-md'
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </form>
         </Modal>
+        <div>
+          {notesIsLoading ? (
+            <Spinner />
+          ) : (
+            <div className='flex flex-col gap-3'>
+              {ticket.status !== 'Closed' &&
+                notes.map((note) => (
+                  <NewNote note={note} ticket={ticket} key={note._id} />
+                ))}
+            </div>
+          )}
+        </div>
+
         <div className='pt-5 flex gap-3'>
           {ticket.status !== 'Closed' && (
             <button
               onClick={handleCloseTicket}
-              className=' w-full bg-red-500 p-medium-14 md:p-medium-16 text-white rounded px-2 py-2'
+              className='w-full bg-red-500 p-medium-14 md:p-medium-16 text-white rounded px-2 py-2'
             >
               Close Ticket
             </button>
